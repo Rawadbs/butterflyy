@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AddHabitDialog extends StatefulWidget {
-  final Function(String, String) onAddHabit;
+  final Function(String, String, String) onAddHabit;
 
   const AddHabitDialog({super.key, required this.onAddHabit});
 
@@ -10,8 +10,9 @@ class AddHabitDialog extends StatefulWidget {
 }
 
 class _AddHabitDialogState extends State<AddHabitDialog> {
-  String habitName = '';
-  String habitType = 'صحية'; // القيمة الافتراضية لنوع العادة
+  final TextEditingController _habitNameController = TextEditingController();
+  String _habitType = 'صحية'; // القيمة الافتراضية لنوع العادة
+  String _habitTime = 'الفجر'; // القيمة الافتراضية لوقت العادة
 
   @override
   Widget build(BuildContext context) {
@@ -27,32 +28,32 @@ class _AddHabitDialogState extends State<AddHabitDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
-              onChanged: (value) {
-                habitName = value;
-              },
+              controller: _habitNameController,
               decoration: const InputDecoration(
-                  labelText: 'اسم العادة',
-                  labelStyle: TextStyle(fontFamily: 'Cairo')),
+                labelText: 'اسم العادة',
+                labelStyle: TextStyle(fontFamily: 'Cairo'),
+              ),
             ),
+            const SizedBox(height: 16),
             Row(
               children: [
                 const Expanded(
                   child: Text(
                     'تصنيف العادة',
                     style: TextStyle(
-                        fontSize: 15,
-                        color: Colors.black54,
-                        fontFamily: 'Cairo' // يمكنك تعديل اللون حسب التصميم
-                        ),
+                      fontSize: 15,
+                      color: Colors.black54,
+                      fontFamily: 'Cairo',
+                    ),
                   ),
                 ),
                 Expanded(
-                  flex: 2, // يمكن تعديل نسبة التوسع حسب الحاجة
+                  flex: 2,
                   child: DropdownButtonFormField<String>(
-                    value: habitType,
+                    value: _habitType,
                     onChanged: (String? newValue) {
                       setState(() {
-                        habitType = newValue!;
+                        _habitType = newValue!;
                       });
                     },
                     decoration: InputDecoration(
@@ -78,33 +79,79 @@ class _AddHabitDialogState extends State<AddHabitDialog> {
                 ),
               ],
             ),
-            Padding(
-              padding: const EdgeInsets.all(14),
-              child: GestureDetector(
-                onTap: () {
-                  if (habitName.isNotEmpty) {
-                    widget.onAddHabit(habitName, habitType);
-                    Navigator.of(context).pop();
-                  }
-                },
-                child: Container(
-                  width: double.infinity,
-                  height: 35,
-                  decoration: const BoxDecoration(
-                    color: Color(0xff525357),
-                    borderRadius: BorderRadius.all(Radius.circular(50)),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'حفظ',
-                      textAlign: TextAlign.center,
-                      style:
-                          TextStyle(color: Colors.white, fontFamily: 'Cairo'),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'وقت العادة',
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Colors.black54,
+                      fontFamily: 'Cairo',
                     ),
                   ),
                 ),
+                Expanded(
+                  flex: 2,
+                  child: DropdownButtonFormField<String>(
+                    value: _habitTime,
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _habitTime = newValue!;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    dropdownColor: Colors.white,
+                    items: <String>['الفجر', 'الظهر', 'العصر', 'المغرب', 'العشاء']
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(
+                          value,
+                          style: const TextStyle(fontFamily: 'Cairo'),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                if (_habitNameController.text.isNotEmpty) {
+                  widget.onAddHabit(
+                    _habitNameController.text,
+                    _habitType,
+                    _habitTime,
+                  );
+                  Navigator.of(context).pop();
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xff525357),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                minimumSize: const Size(double.infinity, 35),
               ),
-            )
+              child: const Text(
+                'حفظ',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontFamily: 'Cairo',
+                ),
+              ),
+            ),
           ],
         ),
       ),

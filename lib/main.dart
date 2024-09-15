@@ -1,9 +1,16 @@
-import 'package:butterfly/pages/homepage.dart';
+import 'package:butterfly/blocs/habbitbloc.dart';
+import 'package:butterfly/blocs/habbitevent.dart';
+import 'package:butterfly/pages/onboarding.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:butterfly/pages/homepage.dart';
 
 void main() {
   runApp(
-    const MyApp(),
+    BlocProvider(
+      create: (context) => HabitBloc()..add(LoadHabits()),
+      child: const MyApp(),
+    ),
   );
 }
 
@@ -17,7 +24,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      home: const HomePage(),
+      home: const Onboarding(),
     );
   }
 }
