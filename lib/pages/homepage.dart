@@ -1,6 +1,8 @@
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butterfly/widgets/habbitlist.dart';
 import 'package:butterfly/widgets/form_habbit.dart';
-import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -13,27 +15,61 @@ class _HomePageState extends State<HomePage> {
   List<Map<String, dynamic>> habits = [];
   double _completionPercentage = 0;
 
+  @override
+  void initState() {
+    super.initState();
+    _loadHabits();
+  }
+
+  Future<void> _loadHabits() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? habitsJson = prefs.getString('habits');
+    if (habitsJson != null) {
+      setState(() {
+        habits = List<Map<String, dynamic>>.from(json.decode(habitsJson));
+        _updateCompletionPercentage();
+      });
+    }
+  }
+
+  Future<void> _saveHabits() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String habitsJson = json.encode(habits);
+    await prefs.setString('habits', habitsJson);
+    print(
+        "Habits Saved: $habitsJson"); // تحقق من أن البيانات تم حفظها بشكل صحيح
+  }
+
   void _addHabit(String name, String type) {
     setState(() {
       habits.add({'name': name, 'type': type, 'isCompleted': false});
+      _saveHabits();
     });
   }
 
   void _updateHabitCompletion(int index, bool isCompleted) {
     setState(() {
       habits[index]['isCompleted'] = isCompleted;
-
-      // حساب النسبة المئوية بناءً على عدد العادات
-      double habitCompletionPercentage = 100 / habits.length;
-
-      if (isCompleted) {
-        _completionPercentage =
-            (_completionPercentage + habitCompletionPercentage).clamp(0, 100);
-      } else {
-        _completionPercentage =
-            (_completionPercentage - habitCompletionPercentage).clamp(0, 100);
-      }
+      _saveHabits();
+      _updateCompletionPercentage();
     });
+  }
+
+  void _updateCompletionPercentage() {
+    if (habits.isEmpty) {
+      _completionPercentage = 0;
+    } else {
+      _completionPercentage =
+          (habits.where((h) => h['isCompleted'] == true).length /
+                  habits.length) *
+              100;
+    }
+  }
+
+  @override
+  void dispose() {
+    _saveHabits(); // تأكد من أن البيانات يتم حفظها عند إغلاق التطبيق
+    super.dispose();
   }
 
   Color _getColorForType(String type) {
@@ -104,8 +140,7 @@ class _HomePageState extends State<HomePage> {
                     borderRadius: BorderRadius.all(Radius.circular(50)),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.only(
-                        left: 8.0), // لضمان أن النسبة المئوية تظهر بشكل صحيح
+                    padding: const EdgeInsets.only(left: 8.0),
                     child: Text(
                       '${_completionPercentage.toStringAsFixed(0)}%',
                       style: const TextStyle(
@@ -149,18 +184,10 @@ class _HomePageState extends State<HomePage> {
                         onDismissed: (direction) {
                           setState(() {
                             habits.removeAt(index);
+                            _saveHabits(); // تأكد من استدعاء هذه الدالة بعد الحذف
 
                             // إعادة حساب النسبة المئوية بعد حذف العادة
-                            if (habits.isNotEmpty) {
-                              _completionPercentage = (habits
-                                          .where(
-                                              (h) => h['isCompleted'] == true)
-                                          .length /
-                                      habits.length) *
-                                  100;
-                            } else {
-                              _completionPercentage = 0;
-                            }
+                            _updateCompletionPercentage();
                           });
 
                           ScaffoldMessenger.of(context).showSnackBar(
