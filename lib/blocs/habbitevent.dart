@@ -21,3 +21,10 @@ class RemoveHabitEvent extends HabitEvent {
 }
 
 class LoadHabits extends HabitEvent {}
+
+class AddSelectedHabitsEvent extends HabitEvent {
+  final List<Map<String, dynamic>> selectedHabits;
+
+  AddSelectedHabitsEvent({required this.selectedHabits});
+
+}

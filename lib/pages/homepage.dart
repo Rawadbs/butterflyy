@@ -117,53 +117,48 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ),
-              BlocBuilder<HabitBloc, HabitState>(
-                builder: (context, state) {
-                  if (state is HabitLoaded) {
-                    final groupedHabits = <String, List<Map<String, dynamic>>>{
-                      'الفجر': [],
-                      'الظهر': [],
-                      'العصر': [],
-                      'المغرب': [],
-                      'العشاء': [],
-                    };
-
-                    for (var habit in state.habits) {
-                      final time = habit['time'] ?? 'الفجر';
-                      groupedHabits[time]?.add(habit);
-                    }
-
-                    return Directionality(
-                      textDirection: TextDirection.rtl,
-                      child: Column(
-                        children: groupedHabits.entries.map((entry) {
-                          final time = entry.key;
-                          final habits = entry.value;
-
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 40),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 50),
-                                child: Text(
-                                  time,
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xff525357),
-                                    fontFamily: 'Cairo',
-                                  ),
-                                ),
+              Directionality(
+                textDirection: TextDirection.rtl,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 40),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.only(right: 50),
+                          child: Directionality(
+                            textDirection: TextDirection.rtl,
+                            child: Text(
+                              'عادات شائعة',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xff525357),
+                                fontFamily: 'Cairo',
                               ),
-                              Padding(
+                            ),
+                          ),
+                        ),
+                        BlocBuilder<HabitBloc, HabitState>(
+                          builder: (context, state) {
+                            if (state is HabitLoaded) {
+                              // تصفية العادات بناءً على النوع
+                              final commonHabits = state.habits.where((habit) {
+                                return habit['type'] == 'شخصية' ||
+                                    habit['type'] == 'دينية' ||
+                                    habit['type'] == 'صحية';
+                              }).toList();
+
+                              // عرض العادات بعد التصفية
+                              return Padding(
                                 padding: const EdgeInsets.only(right: 35),
                                 child: ListView.builder(
                                   shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemCount: habits.length,
+                                  itemCount: commonHabits.length,
                                   itemBuilder: (context, index) {
-                                    final habit = habits[index];
+                                    final habit = commonHabits[index];
                                     return Dismissible(
                                       key: Key(habit['name']),
                                       direction: DismissDirection.startToEnd,
@@ -192,16 +187,108 @@ class _HomePageState extends State<HomePage> {
                                     );
                                   },
                                 ),
-                              ),
-                              const SizedBox(height: 20),
-                            ],
+                              );
+                            }
+                            return const CircularProgressIndicator();
+                          },
+                        ),
+                      ],
+                    ),
+                    BlocBuilder<HabitBloc, HabitState>(
+                      builder: (context, state) {
+                        if (state is HabitLoaded) {
+                          final groupedHabits =
+                              <String, List<Map<String, dynamic>>>{
+                            'الفجر': [],
+                            'الظهر': [],
+                            'العصر': [],
+                            'المغرب': [],
+                            'العشاء': [],
+                          };
+
+                          for (var habit in state.habits) {
+                            final time = habit['time'] ?? 'الفجر';
+                            if (!groupedHabits.containsKey(time)) {
+                              groupedHabits[time] = [];
+                            }
+                            groupedHabits[time]?.add(habit);
+                          }
+
+                          return Directionality(
+                            textDirection: TextDirection.rtl,
+                            child: Column(
+                              children: groupedHabits.entries.map((entry) {
+                                final time = entry.key;
+                                final habits = entry.value;
+
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 40),
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 50),
+                                      child: Text(
+                                        time,
+                                        style: const TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xff525357),
+                                          fontFamily: 'Cairo',
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 35),
+                                      child: ListView.builder(
+                                        shrinkWrap: true,
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
+                                        itemCount: habits.length,
+                                        itemBuilder: (context, index) {
+                                          final habit = habits[index];
+                                          return Dismissible(
+                                            key: Key(habit['name']),
+                                            direction:
+                                                DismissDirection.startToEnd,
+                                            background: Container(
+                                              color: Colors.red,
+                                              alignment: Alignment.centerLeft,
+                                              padding: const EdgeInsets.only(
+                                                  left: 16),
+                                              child: const Icon(Icons.delete,
+                                                  color: Colors.white),
+                                            ),
+                                            onDismissed: (direction) {
+                                              context.read<HabitBloc>().add(
+                                                  RemoveHabitEvent(state.habits
+                                                      .indexOf(habit)));
+                                            },
+                                            child: HabitListTile(
+                                              index:
+                                                  state.habits.indexOf(habit),
+                                              name: habit['name'] ?? '',
+                                              type: habit['type'] ?? 'غير محدد',
+                                              color: _getColorForType(
+                                                  habit['type'] ?? 'غير محدد'),
+                                              isCompleted:
+                                                  habit['isCompleted'] ?? false,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(height: 20),
+                                  ],
+                                );
+                              }).toList(),
+                            ),
                           );
-                        }).toList(),
-                      ),
-                    );
-                  }
-                  return const CircularProgressIndicator();
-                },
+                        }
+                        return const CircularProgressIndicator();
+                      },
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

@@ -10,6 +10,7 @@ class HabitBloc extends Bloc<HabitEvent, HabitState> {
     on<UpdateHabitCompletionEvent>(_onUpdateHabitCompletion);
     on<RemoveHabitEvent>(_onRemoveHabit);
     on<LoadHabits>(_onLoadHabits);
+    on<AddSelectedHabitsEvent>(_onAddSelectedHabits);
     add(LoadHabits()); // Ensure habits are loaded initially
   }
 
@@ -76,5 +77,27 @@ class HabitBloc extends Bloc<HabitEvent, HabitState> {
     if (habits.isEmpty) return 0;
     final completedCount = habits.where((h) => h['isCompleted'] == true).length;
     return (completedCount / habits.length) * 100;
+  }
+
+  // Handler for AddSelectedHabitsEvent
+  Future<void> _onAddSelectedHabits(
+      AddSelectedHabitsEvent event, Emitter<HabitState> emit) async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? habitsJson = prefs.getString('habits');
+    final List<Map<String, dynamic>> existingHabits = habitsJson != null
+        ? List<Map<String, dynamic>>.from(json.decode(habitsJson))
+        : [];
+
+    // Add selected habits from the event
+    existingHabits.addAll(event.selectedHabits);
+
+    // Save the updated habits to shared preferences
+    await prefs.setString('habits', json.encode(existingHabits));
+
+    // Emit the updated state
+    emit(HabitLoaded(
+      habits: existingHabits,
+      completionPercentage: _calculateCompletionPercentage(existingHabits),
+    ));
   }
 }

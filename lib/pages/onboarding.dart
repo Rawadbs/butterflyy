@@ -1,4 +1,4 @@
-import 'package:butterfly/pages/homepage.dart';
+import 'package:butterfly/pages/onboarding_second.dart';
 import 'package:flutter/material.dart';
 
 class Onboarding extends StatefulWidget {
@@ -17,7 +17,9 @@ class _OnboardingState extends State<Onboarding> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => HomePage(userName: name), // تمرير الاسم هنا
+          builder: (context) => OnboardingSecond(
+            userName: name,
+          ),
         ),
       );
     } else {
