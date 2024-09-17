@@ -110,8 +110,13 @@ class _AddHabitDialogState extends State<AddHabitDialog> {
                       ),
                     ),
                     dropdownColor: Colors.white,
-                    items: <String>['الفجر', 'الظهر', 'العصر', 'المغرب', 'العشاء']
-                        .map<DropdownMenuItem<String>>((String value) {
+                    items: <String>[
+                      'الفجر',
+                      'الظهر',
+                      'العصر',
+                      'المغرب',
+                      'العشاء'
+                    ].map<DropdownMenuItem<String>>((String value) {
                       return DropdownMenuItem<String>(
                         value: value,
                         child: Text(
