@@ -36,7 +36,8 @@ class OnboardingSecondState extends State<OnboardingSecond> {
         return {
           'name': item['text'] ?? '',
           'type': item['type'] ?? '',
-          'isCompleted': false, // Adding a default value for 'isCompleted'
+          'isCompleted': false,
+          'isCommon': true,
         };
       }).toList();
 

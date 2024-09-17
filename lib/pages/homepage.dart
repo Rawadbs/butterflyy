@@ -123,6 +123,7 @@ class _HomePageState extends State<HomePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 40),
+                    // قسم العادات الشائعة
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -144,14 +145,13 @@ class _HomePageState extends State<HomePage> {
                         BlocBuilder<HabitBloc, HabitState>(
                           builder: (context, state) {
                             if (state is HabitLoaded) {
-                              // تصفية العادات بناءً على النوع
+                              // تصفية العادات الشائعة بناءً على وجود خاصية isCommon
                               final commonHabits = state.habits.where((habit) {
-                                return habit['type'] == 'شخصية' ||
-                                    habit['type'] == 'دينية' ||
-                                    habit['type'] == 'صحية';
+                                return habit['isCommon'] ==
+                                    true; // فقط العادات التي تحتوي على isCommon == true
                               }).toList();
 
-                              // عرض العادات بعد التصفية
+                              // عرض العادات الشائعة
                               return Padding(
                                 padding: const EdgeInsets.only(right: 35),
                                 child: ListView.builder(
@@ -194,9 +194,12 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ],
                     ),
+
+                    // قسم العادات حسب الوقت
                     BlocBuilder<HabitBloc, HabitState>(
                       builder: (context, state) {
                         if (state is HabitLoaded) {
+                          // تصفية العادات حسب الوقت وتجنب إضافة العادات الشائعة
                           final groupedHabits =
                               <String, List<Map<String, dynamic>>>{
                             'الفجر': [],
@@ -206,12 +209,21 @@ class _HomePageState extends State<HomePage> {
                             'العشاء': [],
                           };
 
+                          // استبعاد العادات الشائعة من الأقسام الزمنية
+                          final commonHabits = state.habits.where((habit) {
+                            return habit['isCommon'] ==
+                                true; // فقط العادات الشائعة
+                          }).toList();
+
                           for (var habit in state.habits) {
                             final time = habit['time'] ?? 'الفجر';
-                            if (!groupedHabits.containsKey(time)) {
-                              groupedHabits[time] = [];
+                            // إضافة العادات إلى الأقسام الزمنية فقط إذا لم تكن من العادات الشائعة
+                            if (!commonHabits.contains(habit)) {
+                              if (!groupedHabits.containsKey(time)) {
+                                groupedHabits[time] = [];
+                              }
+                              groupedHabits[time]?.add(habit);
                             }
-                            groupedHabits[time]?.add(habit);
                           }
 
                           return Directionality(
