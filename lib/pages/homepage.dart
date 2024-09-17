@@ -114,9 +114,10 @@ class _HomePageState extends State<HomePage> {
                 child: Text(
                   'مهام اليوم',
                   style: TextStyle(
-                    fontSize: 16,
-                    color: Color(0xffa0a2a8),
+                    fontSize: 20,
+                    color: Color(0xff525357),
                     fontFamily: 'Cairo',
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
@@ -137,9 +138,8 @@ class _HomePageState extends State<HomePage> {
                             child: Text(
                               'عادات شائعة',
                               style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xff525357),
+                                fontSize: 18,
+                                color: Color(0xffa0a2a8),
                                 fontFamily: 'Cairo',
                               ),
                             ),
@@ -245,9 +245,8 @@ class _HomePageState extends State<HomePage> {
                                       child: Text(
                                         time,
                                         style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: Color(0xff525357),
+                                          fontSize: 18,
+                                          color: Color(0xffa0a2a8),
                                           fontFamily: 'Cairo',
                                         ),
                                       ),
